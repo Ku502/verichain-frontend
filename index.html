@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>VeriChain AI — Supply Chain Command Center</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=DM+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+  <div class="ticker-bar">
+    <span class="ticker-live">LIVE</span>
+    <div class="ticker-track"><div class="ticker-inner" id="ticker-inner">Initializing VeriChain Command Center...</div></div>
+  </div>
+
+  <div class="shell">
+
+    <header class="hdr">
+      <div class="hdr-left">
+        <div class="logo">VC</div>
+        <div>
+          <div class="logo-name">VeriChain <em>AI</em></div>
+          <div class="logo-sub">Zero-Trust Supply Chain Command Center</div>
+        </div>
+      </div>
+      <div class="hdr-right">
+        <div class="status-pill green" id="chain-pill"><span class="dot"></span>Blockchain active</div>
+        <div class="status-pill amber" id="api-pill"><span class="dot"></span>Connecting...</div>
+        <button class="icon-btn" id="theme-btn" onclick="toggleTheme()" title="Toggle theme">🌙</button>
+        <button class="dispatch-trigger" onclick="toggleForm()">
+          <span id="form-btn-txt">+ New shipment</span>
+        </button>
+      </div>
+    </header>
+
+    <div class="metrics-row">
+      <div class="metric"><div class="metric-n" id="m-total">—</div><div class="metric-l">Total shipments</div></div>
+      <div class="metric"><div class="metric-n blue" id="m-transit">—</div><div class="metric-l">In transit</div></div>
+      <div class="metric"><div class="metric-n green" id="m-chain">—</div><div class="metric-l">On-chain verified</div></div>
+      <div class="metric"><div class="metric-n red" id="m-risk">—</div><div class="metric-l">High risk</div></div>
+      <div class="metric"><div class="metric-n teal" id="m-delivered">—</div><div class="metric-l">Delivered</div></div>
+      <div class="metric donut-metric">
+        <canvas id="donut" width="80" height="80"></canvas>
+        <div class="donut-legend" id="donut-legend"></div>
+      </div>
+    </div>
+
+    <div class="main-layout">
+      <div class="left-col">
+
+        <div class="map-card">
+          <div class="card-head">
+            <span class="card-title">Live route map</span>
+            <span class="card-sub">Active shipments across India</span>
+          </div>
+          <div class="map-body">
+            <svg id="india-map" viewBox="0 0 380 420" width="100%">
+              <path class="india-shape" d="M140,20 L180,18 L220,25 L255,40 L270,60 L280,85 L290,110 L300,130 L310,155 L315,175 L320,195 L318,215 L310,235 L305,255 L295,270 L280,285 L265,298 L250,308 L240,320 L235,335 L230,350 L220,365 L210,378 L200,388 L193,395 L188,385 L182,370 L175,355 L168,340 L160,325 L150,310 L138,295 L125,280 L112,265 L100,248 L90,230 L82,210 L78,190 L76,170 L80,150 L86,130 L95,110 L105,90 L115,70 L128,50 Z"/>
+              <ellipse cx="220" cy="400" rx="12" ry="8" class="india-shape" opacity="0.5"/>
+              <g id="map-cities"></g>
+              <g id="map-routes"></g>
+              <g id="map-labels"></g>
+            </svg>
+          </div>
+        </div>
+
+        <div class="toolbar">
+          <div class="tabs">
+            <button class="tab on" onclick="setFilter('ALL',this)">All</button>
+            <button class="tab" onclick="setFilter('PENDING',this)">Pending</button>
+            <button class="tab" onclick="setFilter('IN_TRANSIT',this)">In transit</button>
+            <button class="tab" onclick="setFilter('DELAYED',this)">Delayed</button>
+            <button class="tab" onclick="setFilter('DELIVERED',this)">Delivered</button>
+          </div>
+          <input class="search" type="text" placeholder="Search by city, ID, name…" oninput="onSearch()"/>
+        </div>
+
+        <div id="loading" class="skeletons">
+          <div class="skel"></div><div class="skel"></div><div class="skel"></div>
+        </div>
+
+        <div id="grid" class="grid" style="display:none"></div>
+
+      </div>
+
+      <div class="right-col">
+        <div class="activity-card">
+          <div class="card-head">
+            <span class="card-title">Activity feed</span>
+            <span class="activity-dot"><span class="dot green"></span>Live</span>
+          </div>
+          <div class="activity-list" id="activity-list">
+            <div class="activity-empty">No activity yet</div>
+          </div>
+        </div>
+
+        <div class="chain-stats-card">
+          <div class="card-head"><span class="card-title">Blockchain ledger</span></div>
+          <div class="chain-blocks" id="chain-blocks">
+            <div class="chain-empty">No blocks yet</div>
+          </div>
+        </div>
+
+        <div class="quick-stats-card">
+          <div class="card-head"><span class="card-title">AI performance</span></div>
+          <div class="ai-stats">
+            <div class="ai-stat-row"><span class="ai-stat-label">Avg confidence</span><span class="ai-stat-val" id="avg-conf">—</span></div>
+            <div class="ai-stat-row"><span class="ai-stat-label">Predictions made</span><span class="ai-stat-val" id="pred-count">—</span></div>
+            <div class="ai-stat-row"><span class="ai-stat-label">Reroutes suggested</span><span class="ai-stat-val red" id="reroute-count">—</span></div>
+            <div class="ai-stat-row"><span class="ai-stat-label">Model status</span><span class="ai-stat-val green">Active</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="form-drawer" class="form-drawer" style="display:none">
+    <div class="drawer-inner">
+      <div class="drawer-head">
+        <span class="card-title">Dispatch new shipment</span>
+        <button class="close-btn" onclick="toggleForm()">✕</button>
+      </div>
+      <div class="form-grid">
+        <div class="field"><label>Origin city</label><input id="f-origin" type="text" placeholder="Mumbai, Maharashtra"/></div>
+        <div class="field"><label>Destination</label><input id="f-dest" type="text" placeholder="Delhi, NCR"/></div>
+        <div class="field"><label>Sender name</label><input id="f-sender" type="text" placeholder="Rahul Sharma"/></div>
+        <div class="field"><label>Receiver name</label><input id="f-receiver" type="text" placeholder="Priya Singh"/></div>
+        <div class="field"><label>Weight (kg)</label><input id="f-weight" type="number" placeholder="2.5" step="0.1"/></div>
+        <div class="field"><label>Distance (km)</label><input id="f-dist" type="number" placeholder="980"/></div>
+        <div class="field"><label>Weather condition</label>
+          <select id="f-weather">
+            <option value="clear">Clear</option>
+            <option value="rain">Rain</option>
+            <option value="heavy rain">Heavy rain</option>
+            <option value="storm">Storm</option>
+            <option value="snow">Snow</option>
+            <option value="fog">Fog</option>
+            <option value="hurricane">Hurricane</option>
+          </select>
+        </div>
+        <div class="field"><label>Expected delivery</label><input id="f-eta" type="datetime-local"/></div>
+      </div>
+      <button class="dispatch-btn" id="dispatch-btn" onclick="dispatchShipment()">
+        <span id="btn-txt">Dispatch shipment</span>
+      </button>
+    </div>
+  </div>
+
+  <div id="bc-overlay" class="overlay" style="display:none">
+    <div class="bc-modal">
+      <div class="bc-spinner"></div>
+      <div class="bc-title">Logging to Ethereum Sepolia</div>
+      <div id="bc-steps">
+        <div class="bc-step" id="bs1">Generating tracking ID</div>
+        <div class="bc-step" id="bs2">Running AI prediction model</div>
+        <div class="bc-step" id="bs3">Connecting to Ethereum node</div>
+        <div class="bc-step" id="bs4">Broadcasting transaction</div>
+        <div class="bc-step" id="bs5">Confirmed on-chain</div>
+      </div>
+      <div class="bc-hash-box" id="bc-hash"></div>
+    </div>
+  </div>
+
+  <div id="upd-overlay" class="overlay" style="display:none">
+    <div class="upd-modal">
+      <div class="bc-title" id="upd-title">Update status</div>
+      <select class="finput" id="upd-status"></select>
+      <input class="finput" id="upd-loc" type="text" placeholder="Current location (optional)"/>
+      <input class="finput" id="upd-notes" type="text" placeholder="Notes (optional)"/>
+      <div class="modal-row">
+        <button class="btn-sec" onclick="closeOverlays()">Cancel</button>
+        <button class="btn-pri" id="upd-ok">Update</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
