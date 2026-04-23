@@ -15,6 +15,7 @@ const CITIES = {
   'Mumbai':     {x:108, y:230, label:'Mumbai'},
   'Delhi':      {x:175, y:108, label:'Delhi'},
   'Bangalore':  {x:155, y:310, label:'Bengaluru'},
+  'Bengaluru':  {x:155, y:310, label:'Bengaluru'},
   'Chennai':    {x:195, y:320, label:'Chennai'},
   'Hyderabad':  {x:175, y:265, label:'Hyderabad'},
   'Pune':       {x:125, y:248, label:'Pune'},
@@ -28,6 +29,20 @@ const CITIES = {
   'Nagpur':     {x:185, y:228, label:'Nagpur'},
   'Kochi':      {x:150, y:350, label:'Kochi'},
   'Bhopal':     {x:165, y:205, label:'Bhopal'},
+  'Rohtak':     {x:168, y:115, label:'Rohtak'},
+  'Shimla':     {x:172, y:88,  label:'Shimla'},
+  'Patna':      {x:218, y:160, label:'Patna'},
+  'Chandigarh': {x:168, y:95,  label:'Chandigarh'},
+  'Varanasi':   {x:210, y:162, label:'Varanasi'},
+  'Amritsar':   {x:155, y:90,  label:'Amritsar'},
+  'Goa':        {x:118, y:288, label:'Goa'},
+  'Coimbatore': {x:162, y:338, label:'Coimbatore'},
+  'Visakhapatnam':{x:218,y:255,label:'Vizag'},
+  'Bhubaneswar':{x:228, y:215, label:'Bhubaneswar'},
+  'Raipur':     {x:198, y:218, label:'Raipur'},
+  'Ranchi':     {x:225, y:188, label:'Ranchi'},
+  'Jodhpur':    {x:140, y:155, label:'Jodhpur'},
+  'Agra':       {x:178, y:132, label:'Agra'},
 };
 
 function cityFromString(str) {
@@ -282,7 +297,7 @@ function updateDonut() {
 
 // ── India Map ─────────────────────────────────────────────────
 function updateMap() {
-  const activeShips = ships.filter(s => s.currentStatus !== 'DELIVERED' && s.currentStatus !== 'CANCELLED');
+  const activeShips = ships.filter(s => s.currentStatus !== 'CANCELLED');
 
   const cityDots  = document.getElementById('map-cities');
   const routeLines = document.getElementById('map-routes');
@@ -460,21 +475,31 @@ async function dispatchShipment() {
     weightKg:weight, distanceKm:dist, weatherCondition:weather,
     expectedDelivery: eta ? eta+':00' : '2026-05-01T14:00:00' };
 
-  await bcStep('bs1',900);
-  await bcStep('bs2',1100);
-  await bcStep('bs3',950);
+  // Run animation AND backend call in parallel
+  const animPromise = (async () => {
+    await bcStep('bs1', 700);
+    await bcStep('bs2', 900);
+    await bcStep('bs3', 700);
+  })();
 
-  let ship = null;
-  if (isLive) {
+  const backendPromise = (async () => {
+    if (!isLive) return null;
     try {
-      const r = await fetch(`${BACKEND}/api/shipments`,{
-        method:'POST',
-        headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},
-        body:JSON.stringify(payload)
+      const r = await fetch(`${BACKEND}/api/shipments`, {
+        method: 'POST',
+        headers: {'Content-Type':'application/json','Authorization':`Bearer ${token}`},
+        body: JSON.stringify(payload),
+        signal: AbortSignal.timeout(15000)
       });
-      if(r.ok) ship = await r.json();
+      if (r.ok) return await r.json();
     } catch {}
-  }
+    return null;
+  })();
+
+  // Wait for both to finish
+  const [, backendResult] = await Promise.all([animPromise, backendPromise]);
+
+  let ship = backendResult;
 
   if (!ship) {
     const severe=['storm','heavy rain','hurricane','snow'];
@@ -493,11 +518,11 @@ async function dispatchShipment() {
     };
   }
 
-  await bcStep('bs4',800);
-  await bcStep('bs5',500);
+  await bcStep('bs4', 700);
+  await bcStep('bs5', 500);
   document.getElementById('bc-hash').textContent = ship.blockchainTxHash;
 
-  await sleep(1400);
+  await sleep(1200);
   hideBC();
 
   ships.unshift(ship);
