@@ -176,8 +176,37 @@ body { background:var(--bg); color:var(--text); font-family:var(--font); font-si
 .activity-dot { display:flex; align-items:center; gap:5px; margin-left:auto; font:400 11px/1 var(--mono); color:var(--green); }
 
 /* ── India Map ─────────────────────────────────────────── */
-.map-body { padding:8px; }
-.india-shape { fill:var(--surface2); stroke:var(--border2); stroke-width:1; }
+.map-body {
+  padding: 0;
+  background: #1a6ba0;
+  border-radius: 0 0 var(--r-xl) var(--r-xl);
+  overflow: hidden;
+  min-height: 340px;
+  transition: background 0.5s;
+}
+
+[data-theme="dark"] .map-body { background: #040d1a; }
+
+.map-legend {
+  display: flex;
+  gap: 12px;
+  margin-left: auto;
+  flex-wrap: wrap;
+}
+
+.leg-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font: 400 10px/1 var(--mono);
+  color: var(--text2);
+}
+
+.leg-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
 
 /* ── Toolbar ───────────────────────────────────────────── */
 .toolbar { display:flex; justify-content:space-between; align-items:center; gap:12px; }
@@ -476,4 +505,48 @@ body { background:var(--bg); color:var(--text); font-family:var(--font); font-si
   .hdr { flex-direction:column; align-items:flex-start; gap:12px; }
   .form-drawer { width:100%; }
   .terminal { padding:32px 24px; }
+}
+
+/* ── Current location pin ──────────────────────────────── */
+.current-loc {
+  display: flex; align-items: center; gap: 6px;
+  font: 400 12px/1 var(--mono); color: var(--blue);
+  margin: 5px 0;
+  background: var(--blue-bg);
+  border: 0.5px solid var(--blue-br);
+  padding: 5px 8px; border-radius: var(--r-md);
+}
+
+.loc-ping {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--blue); flex-shrink: 0;
+  animation: blink 1s infinite;
+}
+
+/* ── Map legend ────────────────────────────────────────── */
+.map-legend {
+  display: flex; gap: 10px;
+  margin-left: auto; flex-wrap: wrap;
+}
+.leg-item {
+  display: flex; align-items: center; gap: 4px;
+  font: 400 10px/1 var(--mono); color: var(--text2);
+}
+.leg-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+
+/* ── Map body satellite ────────────────────────────────── */
+.map-body {
+  padding: 0;
+  border-radius: 0 0 var(--r-xl) var(--r-xl);
+  overflow: hidden;
+  min-height: 340px;
+}
+
+/* ── Product icon in card ID ───────────────────────────── */
+.c-id { font: 500 13px/1 var(--mono); color: var(--text); }
+
+/* ── Weight / dist hints ───────────────────────────────── */
+#weight-hint, #dist-hint {
+  font: 400 10px/1 var(--mono);
+  transition: color 0.2s;
 }
