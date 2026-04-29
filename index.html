@@ -6,17 +6,21 @@
   <title>VeriChain AI — Supply Chain Command Center</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=DM+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
   <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
 
+  <!-- TICKER -->
   <div class="ticker-bar">
     <span class="ticker-live">LIVE</span>
     <div class="ticker-track"><div class="ticker-inner" id="ticker-inner">Initializing VeriChain Command Center...</div></div>
   </div>
 
+  <!-- SHELL -->
   <div class="shell">
 
+    <!-- HEADER -->
     <header class="hdr">
       <div class="hdr-left">
         <div class="logo">VC</div>
@@ -35,37 +39,56 @@
       </div>
     </header>
 
+    <!-- METRICS ROW -->
     <div class="metrics-row">
-      <div class="metric"><div class="metric-n" id="m-total">—</div><div class="metric-l">Total shipments</div></div>
-      <div class="metric"><div class="metric-n blue" id="m-transit">—</div><div class="metric-l">In transit</div></div>
-      <div class="metric"><div class="metric-n green" id="m-chain">—</div><div class="metric-l">On-chain verified</div></div>
-      <div class="metric"><div class="metric-n red" id="m-risk">—</div><div class="metric-l">High risk</div></div>
-      <div class="metric"><div class="metric-n teal" id="m-delivered">—</div><div class="metric-l">Delivered</div></div>
+      <div class="metric">
+        <div class="metric-n" id="m-total">—</div>
+        <div class="metric-l">Total shipments</div>
+      </div>
+      <div class="metric">
+        <div class="metric-n blue" id="m-transit">—</div>
+        <div class="metric-l">In transit</div>
+      </div>
+      <div class="metric">
+        <div class="metric-n green" id="m-chain">—</div>
+        <div class="metric-l">On-chain verified</div>
+      </div>
+      <div class="metric">
+        <div class="metric-n red" id="m-risk">—</div>
+        <div class="metric-l">High risk</div>
+      </div>
+      <div class="metric">
+        <div class="metric-n teal" id="m-delivered">—</div>
+        <div class="metric-l">Delivered</div>
+      </div>
+      <!-- DONUT CHART -->
       <div class="metric donut-metric">
         <canvas id="donut" width="80" height="80"></canvas>
         <div class="donut-legend" id="donut-legend"></div>
       </div>
     </div>
 
+    <!-- MAIN LAYOUT: MAP + ACTIVITY + GRID -->
     <div class="main-layout">
+
+      <!-- LEFT: MAP + GRID -->
       <div class="left-col">
 
+        <!-- LEAFLET MAP -->
         <div class="map-card">
           <div class="card-head">
             <span class="card-title">Live route map</span>
-            <span class="card-sub">Active shipments across India</span>
+            <span class="card-sub">Real-time shipments across India</span>
+            <div class="map-legend">
+              <span class="leg-item"><span class="leg-dot" style="background:#f59e0b"></span>Pending</span>
+              <span class="leg-item"><span class="leg-dot" style="background:#3b82f6"></span>In transit</span>
+              <span class="leg-item"><span class="leg-dot" style="background:#ef4444"></span>Delayed</span>
+              <span class="leg-item"><span class="leg-dot" style="background:#22c55e"></span>Delivered</span>
+            </div>
           </div>
-          <div class="map-body">
-            <svg id="india-map" viewBox="0 0 380 420" width="100%">
-              <path class="india-shape" d="M140,20 L180,18 L220,25 L255,40 L270,60 L280,85 L290,110 L300,130 L310,155 L315,175 L320,195 L318,215 L310,235 L305,255 L295,270 L280,285 L265,298 L250,308 L240,320 L235,335 L230,350 L220,365 L210,378 L200,388 L193,395 L188,385 L182,370 L175,355 L168,340 L160,325 L150,310 L138,295 L125,280 L112,265 L100,248 L90,230 L82,210 L78,190 L76,170 L80,150 L86,130 L95,110 L105,90 L115,70 L128,50 Z"/>
-              <ellipse cx="220" cy="400" rx="12" ry="8" class="india-shape" opacity="0.5"/>
-              <g id="map-cities"></g>
-              <g id="map-routes"></g>
-              <g id="map-labels"></g>
-            </svg>
-          </div>
+          <div id="leaflet-map" style="height:380px;width:100%;border-radius:0 0 16px 16px;"></div>
         </div>
-
+        <!-- FILTER + SEARCH -->
         <div class="toolbar">
           <div class="tabs">
             <button class="tab on" onclick="setFilter('ALL',this)">All</button>
@@ -77,14 +100,17 @@
           <input class="search" type="text" placeholder="Search by city, ID, name…" oninput="onSearch()"/>
         </div>
 
+        <!-- LOADING -->
         <div id="loading" class="skeletons">
           <div class="skel"></div><div class="skel"></div><div class="skel"></div>
         </div>
 
+        <!-- SHIPMENT GRID -->
         <div id="grid" class="grid" style="display:none"></div>
 
       </div>
 
+      <!-- RIGHT: ACTIVITY FEED -->
       <div class="right-col">
         <div class="activity-card">
           <div class="card-head">
@@ -96,6 +122,7 @@
           </div>
         </div>
 
+        <!-- BLOCKCHAIN STATS -->
         <div class="chain-stats-card">
           <div class="card-head"><span class="card-title">Blockchain ledger</span></div>
           <div class="chain-blocks" id="chain-blocks">
@@ -103,19 +130,34 @@
           </div>
         </div>
 
+        <!-- QUICK STATS -->
         <div class="quick-stats-card">
           <div class="card-head"><span class="card-title">AI performance</span></div>
-          <div class="ai-stats">
-            <div class="ai-stat-row"><span class="ai-stat-label">Avg confidence</span><span class="ai-stat-val" id="avg-conf">—</span></div>
-            <div class="ai-stat-row"><span class="ai-stat-label">Predictions made</span><span class="ai-stat-val" id="pred-count">—</span></div>
-            <div class="ai-stat-row"><span class="ai-stat-label">Reroutes suggested</span><span class="ai-stat-val red" id="reroute-count">—</span></div>
-            <div class="ai-stat-row"><span class="ai-stat-label">Model status</span><span class="ai-stat-val green">Active</span></div>
+          <div class="ai-stats" id="ai-stats">
+            <div class="ai-stat-row">
+              <span class="ai-stat-label">Avg confidence</span>
+              <span class="ai-stat-val" id="avg-conf">—</span>
+            </div>
+            <div class="ai-stat-row">
+              <span class="ai-stat-label">Predictions made</span>
+              <span class="ai-stat-val" id="pred-count">—</span>
+            </div>
+            <div class="ai-stat-row">
+              <span class="ai-stat-label">Reroutes suggested</span>
+              <span class="ai-stat-val red" id="reroute-count">—</span>
+            </div>
+            <div class="ai-stat-row">
+              <span class="ai-stat-label">Model status</span>
+              <span class="ai-stat-val green">Active</span>
+            </div>
           </div>
         </div>
       </div>
+
     </div>
   </div>
 
+  <!-- DISPATCH FORM DRAWER -->
   <div id="form-drawer" class="form-drawer" style="display:none">
     <div class="drawer-inner">
       <div class="drawer-head">
@@ -123,24 +165,63 @@
         <button class="close-btn" onclick="toggleForm()">✕</button>
       </div>
       <div class="form-grid">
-        <div class="field"><label>Origin city</label><input id="f-origin" type="text" placeholder="Mumbai, Maharashtra"/></div>
-        <div class="field"><label>Destination</label><input id="f-dest" type="text" placeholder="Delhi, NCR"/></div>
-        <div class="field"><label>Sender name</label><input id="f-sender" type="text" placeholder="Rahul Sharma"/></div>
-        <div class="field"><label>Receiver name</label><input id="f-receiver" type="text" placeholder="Priya Singh"/></div>
-        <div class="field"><label>Weight (kg)</label><input id="f-weight" type="number" placeholder="2.5" step="0.1"/></div>
-        <div class="field"><label>Distance (km)</label><input id="f-dist" type="number" placeholder="980"/></div>
-        <div class="field"><label>Weather condition</label>
-          <select id="f-weather">
-            <option value="clear">Clear</option>
-            <option value="rain">Rain</option>
-            <option value="heavy rain">Heavy rain</option>
-            <option value="storm">Storm</option>
-            <option value="snow">Snow</option>
-            <option value="fog">Fog</option>
-            <option value="hurricane">Hurricane</option>
+        <div class="field">
+          <label>Origin city</label>
+          <input id="f-origin" type="text" placeholder="Mumbai, Maharashtra" oninput="autoCalcDistance()"/>
+        </div>
+        <div class="field">
+          <label>Destination</label>
+          <input id="f-dest" type="text" placeholder="Delhi, NCR" oninput="autoCalcDistance()"/>
+        </div>
+        <div class="field">
+          <label>Sender name</label>
+          <input id="f-sender" type="text" placeholder="Rahul Sharma"/>
+        </div>
+        <div class="field">
+          <label>Receiver name</label>
+          <input id="f-receiver" type="text" placeholder="Priya Singh"/>
+        </div>
+        <div class="field">
+          <label>Product type</label>
+          <select id="f-product" onchange="onProductChange()">
+            <option value="">Select product...</option>
+            <option value="documents" data-weight="0.3" data-icon="📄">📄 Documents</option>
+            <option value="clothing" data-weight="2" data-icon="👕">👕 Clothing</option>
+            <option value="electronics" data-weight="1.5" data-icon="📱">📱 Electronics</option>
+            <option value="furniture" data-weight="30" data-icon="🛋️">🛋️ Furniture</option>
+            <option value="groceries" data-weight="5" data-icon="🛒">🛒 Groceries</option>
+            <option value="medicine" data-weight="1" data-icon="💊">💊 Medicine</option>
+            <option value="books" data-weight="3" data-icon="📚">📚 Books</option>
+            <option value="industrial" data-weight="50" data-icon="⚙️">⚙️ Industrial parts</option>
+            <option value="jewellery" data-weight="0.2" data-icon="💎">💎 Jewellery</option>
+            <option value="food" data-weight="4" data-icon="🍱">🍱 Food items</option>
+            <option value="custom" data-weight="" data-icon="📦">📦 Other (custom)</option>
           </select>
         </div>
-        <div class="field"><label>Expected delivery</label><input id="f-eta" type="datetime-local"/></div>
+        <div class="field">
+          <label>Weight (kg) <span id="weight-hint" style="color:var(--text3);font-size:10px"></span></label>
+          <input id="f-weight" type="number" placeholder="Auto-filled by product" step="0.1"/>
+        </div>
+        <div class="field">
+          <label>Distance (km) <span id="dist-hint" style="color:var(--green);font-size:10px"></span></label>
+          <input id="f-dist" type="number" placeholder="Auto-calculated" readonly style="opacity:0.7"/>
+        </div>
+        <div class="field">
+          <label>Weather condition</label>
+          <select id="f-weather">
+            <option value="clear">☀️ Clear</option>
+            <option value="rain">🌧️ Rain</option>
+            <option value="heavy rain">⛈️ Heavy rain</option>
+            <option value="storm">🌪️ Storm</option>
+            <option value="snow">❄️ Snow</option>
+            <option value="fog">🌫️ Fog</option>
+            <option value="hurricane">🌀 Hurricane</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Expected delivery</label>
+          <input id="f-eta" type="datetime-local"/>
+        </div>
       </div>
       <button class="dispatch-btn" id="dispatch-btn" onclick="dispatchShipment()">
         <span id="btn-txt">Dispatch shipment</span>
@@ -148,6 +229,7 @@
     </div>
   </div>
 
+  <!-- BLOCKCHAIN ANIMATION OVERLAY -->
   <div id="bc-overlay" class="overlay" style="display:none">
     <div class="bc-modal">
       <div class="bc-spinner"></div>
@@ -163,6 +245,7 @@
     </div>
   </div>
 
+  <!-- STATUS UPDATE OVERLAY -->
   <div id="upd-overlay" class="overlay" style="display:none">
     <div class="upd-modal">
       <div class="bc-title" id="upd-title">Update status</div>
@@ -176,6 +259,7 @@
     </div>
   </div>
 
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
